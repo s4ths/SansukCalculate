@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>60/40 Splitter - Group 3 Theme</title>
+    
+    <meta name="theme-color" content="#ffffff">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <link rel="manifest" href='data:application/manifest+json,{"name":"60/40 Splitter","short_name":"60/40 Split","start_url":".","display":"standalone","background_color":"#ffffff","theme_color":"#1d4ed8","icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><rect width=%22100%22 height=%22100%22 fill=%22%231d4ed8%22/><text y=%22.9em%22 font-size=%2260%22 fill=%22%23fff%22 x=%2210%22 font-weight=%22bold%22>60</text></svg>","sizes":"512x512","type":"image/svg+xml"}]}' />
+
+    <style>
+        :root {
+            --bg-main: #ffffff;
+            --bg-card: #ffffff;
+            --text-main: #000000;
+            --text-muted: #666666;
+            --primary-blue: #223eff; /* สีน้ำเงิน Electric Blue ตามภาพ Group 3.png */
+            --danger-red: #ff1e1e;   /* สีแดงตรงราคารวม */
+            --gray-history: #e0e0e0; /* สีเทาอ่อนตรงแถบประวัติ */
+            --border-color: #000000;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; -webkit-tap-highlight-color: transparent; }
+        body { background-color: var(--bg-main); color: var(--text-main); padding: 16px; min-height: 100vh; display: flex; flex-direction: column; align-items: center; }
+        
+        /* Setup Screen Style */
+        #setup-screen { margin: auto; max-width: 400px; width: 100%; background: var(--bg-card); border: 1px solid var(--border-color); padding: 24px; border-radius: 28px; }
+        .setup-title { font-size: 1.4rem; font-weight: bold; text-align: center; margin-bottom: 20px; }
+        .label { font-size: 0.95rem; color: var(--text-muted); margin-bottom: 8px; display: block; font-weight: bold; }
+        
+        .people-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 12px; }
+        .btn-select { background: #fff; color: #000; border: 1px solid #ccc; padding: 12px; border-radius: 12px; font-weight: bold; font-size: 1rem; cursor: pointer; }
+        .btn-select.active { background: var(--primary-blue); color: #fff; border-color: var(--primary-blue); }
+        
+        .input-custom-people { width: 100%; background: #fff; border: 1px solid #ccc; color: #000; padding: 12px; border-radius: 12px; font-size: 1rem; text-align: center; margin-bottom: 24px; }
+        
+        .mode-container { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-mode { padding: 16px; border-radius: 16px; border: 1px solid #ccc; font-weight: bold; font-size: 1.05rem; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 6px; background: #fff; }
+        .btn-mode:active { background: #f3f4f6; }
+
+        /* Workspace Screen */
+        #workspace-screen { width: 100%; max-width: 450px; flex: 1; display: flex; flex-direction: column; padding-bottom: 120px; }
+        
+        header { display: flex; justify-content: flex-end; align-items: center; margin-bottom: 16px; padding-bottom: 10px; width: 100%; }
+        .hidden { display: none !important; }
+
+        .btn-add-person { background: var(--primary-blue); color: #fff; border: none; padding: 10px 24px; border-radius: 20px; font-weight: bold; font-size: 1.1rem; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(34,62,255,0.2); }
+
+        /* Equal Split Calculator Box */
+        #equal-calculator-box { background: var(--bg-card); border: 1px solid var(--border-color); padding: 20px; border-radius: 28px; width: 100%; }
+        .main-input { width: 100%; background: #fff; border: 1px solid #ccc; color: #000; padding: 14px; border-radius: 16px; font-size: 1.4rem; text-align: center; margin-bottom: 16px; font-weight: bold; outline: none; }
+        .main-input:focus { border-color: var(--primary-blue); }
+
+        #app-container { display: flex; flex-direction: column; gap: 16px; width: 100%; }
+        
+        /* Customer Box Style - ยึดตามภาพ Group 3.png */
+        .customer-box { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 28px; padding: 24px; display: flex; flex-direction: column; position: relative; }
+        .box-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .box-title { font-weight: bold; font-size: 1.3rem; color: #000; }
+        .btn-clear-box { background: none; border: none; color: var(--text-muted); font-size: 0.9rem; cursor: pointer; text-decoration: underline; }
+        
+        /* Input Row ตามภาพเป๊ะๆ */
+        .price-input-row { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; }
+        .price-input-row input { flex: 1; background: #fff; border: 1px solid #a3a3a3; color: #000; padding: 10px 20px; border-radius: 16px; font-size: 1.2rem; font-weight: bold; outline: none; }
+        .price-input-row input:focus { border-color: var(--primary-blue); }
+        .btn-add-price { background: var(--primary-blue); color: #fff; border: none; width: 46px; height: 46px; border-radius: 14px; font-weight: bold; font-size: 1.6rem; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+        
+        /* แถบประวัติสีเทายาวเต็มกล่อง */
+        .history-display { background: var(--gray-history); border-radius: 16px; padding: 12px 18px; min-height: 44px; font-size: 1.15rem; color: #000; font-weight: bold; word-break: break-all; margin-bottom: 14px; display: flex; align-items: center; letter-spacing: 0.5px; }
+        
+        /* ยอดแยกแอปถุงเงินรายคน */
+        .summary-section { font-size: 0.85rem; line-height: 1.6; color: #000; font-weight: bold; }
+        .thungngern-row { display: flex; justify-content: flex-end; align-items: center; gap: 8px; margin-top: 6px; font-size: 1.2rem; }
+        .thungngern-highlight { color: var(--primary-blue); font-size: 1.5rem; font-weight: bold; margin: 0 4px; }
+        .breakdown-text { font-size: 0.85rem; color: #000; font-weight: bold; letter-spacing: -0.3px; }
+        
+        /* 🔥 แถบราคารวมตัวเลขสีแดงยึดติดล่างสุดตาม Group 3.png */
+        #grand-total-banner { position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%); max-width: 450px; width: calc(100% - 32px); background: var(--bg-card); border: 1px solid var(--border-color); padding: 16px 24px; border-radius: 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 4px 24px rgba(0,0,0,0.08); z-index: 99; }
+        .grand-total-label { font-size: 1.3rem; font-weight: bold; color: #000; }
+        .grand-total-amount { font-size: 1.3rem; font-weight: bold; color: #000; }
+        .grand-total-amount span { color: var(--danger-red); font-size: 1.5rem; font-weight: bold; margin: 0 4px; }
+
+        .btn-back-nav { background: #e5e7eb; color: #374151; width: 100%; padding: 12px; border-radius: 16px; border: none; font-weight: bold; cursor: pointer; margin-top: 20px; font-size: 1rem; }
+    </style>
+</head>
+<body>
+
+    <!-- 1. หน้าตั้งค่าโต๊ะ (Setup Screen) -->
+    <div id="setup-screen">
+        <div class="setup-title">SansukCalculate</div>
+        
+        <label class="label">จำนวนคนใช้ :</label>
+        <div class="people-grid">
+            <button class="btn-select active" onclick="setPeople(2, this)">2 คน</button>
+            <button class="btn-select" onclick="setPeople(3, this)">3 คน</button>
+            <button class="btn-select" onclick="setPeople(4, this)">4 คน</button>
+            <button class="btn-select" onclick="setPeople(5, this)">5 คน</button>
+        </div>
+        <input type="number" id="custom-people-input" class="input-custom-people" placeholder="ระบุจำนวนคนเอง" value="2" min="1" oninput="syncCustomPeople(this.value)">
+        
+        <label class="label">เลือกรูปแบบการคิดเงิน:</label>
+        <div class="mode-container">
+            <button class="btn-mode btn-equal" onclick="launchWorkspace('equal')">
+                <span>🧮 หารเท่ากัน</span>
+            </button>
+            <button class="btn-mode btn-itemized" onclick="launchWorkspace('itemized')">
+                <span>👤 แยกตามเมนู</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- 2. หน้าทำงานหลัก (Workspace Screen) -->
+    <div id="workspace-screen" class="hidden">
+        <header>
+            <button class="btn-add-person" id="btn-add-person-top" onclick="addNewPersonFlow()">+ เพิ่มคน</button>
+        </header>
+
+        <!-- โหมดย่อยที่ 1: หารเท่า -->
+        <div id="equal-mode-container" class="hidden">
+            <div id="equal-calculator-box">
+                <label class="label" style="text-align:center; font-size:1rem; margin-bottom:12px;">กรอกยอดรวมบิลทั้งหมด (บาท)</label>
+                <input type="number" id="bill-total-input" class="main-input" placeholder="0.00" inputmode="decimal" oninput="calculateEqualSplit()">
+                <div id="equal-results-list"></div>
+            </div>
+        </div>
+
+        <!-- โหมดย่อยที่ 2: แยกตามสั่ง (โครงกล่องตามไฟล์ Group 3.png) -->
+        <div id="itemized-mode-container" class="hidden">
+            <main id="app-container">
+                <!-- กล่องรายคนจะเรนเดอร์ที่นี่ -->
+            </main>
+            
+            <!-- แถบราคารวมท้ายจอ ยึดตามแบบ Group 3.png เป๊ะๆ -->
+            <div id="grand-total-banner">
+                <span class="grand-total-label">ราคารวม</span>
+                <span class="grand-total-amount"><span id="grand-total-value">0</span> &nbsp;บาท</span>
+            </div>
+        </div>
+
+        <button class="btn-back-nav" onclick="backToSetup()">กลับไปหน้าแรก</button>
+    </div>
+
+    <script>
+        let selectedPeopleCount = 2;
+        let activeBoxes = [];
+
+        function setPeople(count, btnElement) {
+            selectedPeopleCount = parseInt(count);
+            document.getElementById('custom-people-input').value = count;
+            document.querySelectorAll('.btn-select').forEach(b => b.classList.remove('active'));
+            if(btnElement) btnElement.classList.add('active');
+        }
+
+        function syncCustomPeople(val) {
+            const parsed = parseInt(val);
+            if (!isNaN(parsed) && parsed > 0) {
+                selectedPeopleCount = parsed;
+                document.querySelectorAll('.btn-select').forEach(b => {
+                    if(parseInt(b.innerText) === parsed) b.classList.add('active');
+                    else b.classList.remove('active');
+                });
+            }
+        }
+
+        function formatNumber(num) {
+            return num % 1 === 0 ? num.toString() : num.toFixed(2);
+        }
+
+        function launchWorkspace(mode) {
+            document.getElementById('setup-screen').classList.add('hidden');
+            document.getElementById('workspace-screen').classList.remove('hidden');
+            
+            if (mode === 'equal') {
+                document.getElementById('btn-add-person-top').classList.add('hidden');
+                document.getElementById('equal-mode-container').classList.remove('hidden');
+                document.getElementById('itemized-mode-container').classList.add('hidden');
+                document.getElementById('bill-total-input').value = '';
+                document.getElementById('equal-results-list').innerHTML = '';
+                document.getElementById('bill-total-input').focus();
+            } else {
+                document.getElementById('btn-add-person-top').classList.remove('hidden');
+                document.getElementById('equal-mode-container').classList.add('hidden');
+                document.getElementById('itemized-mode-container').classList.remove('hidden');
+                
+                const container = document.getElementById('app-container');
+                container.innerHTML = '';
+                activeBoxes = [];
+                for (let i = 1; i <= selectedPeopleCount; i++) {
+                    renderCustomerBox(i);
+                }
+                calculateGrandTotal();
+            }
+        }
+
+        function renderCustomerBox(index) {
+            const container = document.getElementById('app-container');
+            const boxId = `customer-${index}`;
+            activeBoxes.push(boxId);
+
+            const boxHTML = `
+                <div class="customer-box" id="${boxId}" data-items="[]" data-total="0">
+                    <div class="box-header">
+                        <span class="box-title">คนที่ ${index}</span>
+                        <button class="btn-clear-box" onclick="clearBox('${boxId}')">ล้างยอด</button>
+                    </div>
+                    
+                    <div class="price-input-row">
+                        <input type="number" id="input-${boxId}" placeholder="0" inputmode="decimal" onkeydown="if(event.key === 'Enter') submitPrice('${boxId}')">
+                        <button class="btn-add-price" onclick="submitPrice('${boxId}')">+</button>
+                    </div>
+
+                    <div class="history-display" id="hist-${boxId}">0</div>
+                    
+                    <div class="summary-section">
+                        <div class="breakdown-text" id="breakdown-v-${boxId}">รัฐยอด 000 บาท</div>
+                        <div class="breakdown-text" id="breakdown-p-${boxId}">ประชาชนยอด 000 บาท</div>
+                        
+                        <div class="thungngern-row">
+                            <span>กดถุงเงิน</span>
+                            <span class="thungngern-highlight" id="thung-${boxId}">0</span>
+                            <span>บาท</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            container.insertAdjacentHTML('beforeend', boxHTML);
+        }
+
+        function addNewPersonFlow() {
+            selectedPeopleCount++;
+            renderCustomerBox(selectedPeopleCount);
+            window.scrollTo({ top: document.body.scrollHeight, behavior: 'smooth' });
+        }
+
+        function submitPrice(boxId) {
+            const input = document.getElementById(`input-${boxId}`);
+            const val = parseFloat(input.value);
+            if (!isNaN(val) && val > 0) {
+                const box = document.getElementById(boxId);
+                let items = JSON.parse(box.getAttribute('data-items'));
+                items.push(val);
+                box.setAttribute('data-items', JSON.stringify(items));
+                
+                input.value = '';
+                input.focus();
+                updateItemizedCalculation(boxId);
+            }
+        }
+
+        function calculateGrandTotal() {
+            let grandTotal = 0;
+            activeBoxes.forEach(boxId => {
+                const box = document.getElementById(boxId);
+                if (box) grandTotal += parseFloat(box.getAttribute('data-total') || 0);
+            });
+            document.getElementById('grand-total-value').innerText = formatNumber(grandTotal);
+        }
+
+        function updateItemizedCalculation(boxId) {
+            const box = document.getElementById(boxId);
+            const items = JSON.parse(box.getAttribute('data-items'));
+            
+            document.getElementById(`hist-${boxId}`).innerText = items.length === 0 ? '0' : items.map(formatNumber).join(' + ');
+
+            const total = items.reduce((sum, a) => sum + a, 0);
+            box.setAttribute('data-total', total);
+            
+            document.getElementById(`thung-${boxId}`).innerText = formatNumber(total);
+
+            const govDiv = document.getElementById(`breakdown-v-${boxId}`);
+            const pplDiv = document.getElementById(`breakdown-p-${boxId}`);
+            
+            const capLimit = 333.33;
+            let govShare = total * 0.6;
+            let pplShare = total * 0.4;
+            
+            if (total > capLimit) {
+                govShare = 200;
+                pplShare = 133.33 + (total - capLimit);
+            }
+
+            govDiv.innerText = `รัฐยอด  ${items.length === 0 ? '000' : formatNumber(govShare)} บาท`;
+            pplDiv.innerText = `ประชาชนยอด  ${items.length === 0 ? '000' : formatNumber(pplShare)} บาท`;
+
+            calculateGrandTotal();
+        }
+
+        function calculateEqualSplit() {
+            const billTotal = parseFloat(document.getElementById('bill-total-input').value);
+            const resultList = document.getElementById('equal-results-list');
+            resultList.innerHTML = '';
+
+            if (isNaN(billTotal) || billTotal <= 0) return;
+            const splitTotal = billTotal / selectedPeopleCount;
+
+            let html = `<div style="margin:12px 0; padding:10px; background:#f3f4f6; border-radius:12px; text-align:center; font-weight:bold;">
+                            <span>เฉลี่ยคนละ: ${formatNumber(splitTotal)} บาท</span>
+                        </div>`;
+
+            for(let i = 1; i <= selectedPeopleCount; i++) {
+                const capLimit = 333.33;
+                let gov = splitTotal * 0.6;
+                let ppl = splitTotal * 0.4;
+                if (splitTotal > capLimit) {
+                    gov = 200;
+                    ppl = 133.33 + (splitTotal - capLimit);
+                }
+                
+                html += `
+                    <div style="background:#fff; padding:16px; border:1px solid #000; border-radius:28px; margin-bottom:12px;">
+                        <div style="font-weight:bold; display:flex; justify-content:space-between; font-size:1.1rem;">
+                            <span>คนที่ ${i}</span>
+                            <span style="color:var(--primary-blue)">กดถุงเงิน ${formatNumber(splitTotal)} บาท</span>
+                        </div>
+                        <div style="font-size:13px; color:var(--text-muted); margin-top:6px; text-align:right; font-weight:bold;">
+                            รัฐยอด ${formatNumber(gov)} บ. | ประชาชนยอด ${formatNumber(ppl)} บ.
+                        </div>
+                    </div>
+                `;
+            }
+            resultList.innerHTML = html;
+        }
+
+        function clearBox(boxId) {
+            const box = document.getElementById(boxId);
+            box.setAttribute('data-items', '[]');
+            updateItemizedCalculation(boxId);
+        }
+
+        function backToSetup() {
+            document.getElementById('workspace-screen').classList.add('hidden');
+            document.getElementById('setup-screen').classList.remove('hidden');
+        }
+
+        // PWA SERVICE WORKER ENGINE
+        const swCode = `
+            const CACHE_NAME = '6040-splitter-group3-v2';
+            self.addEventListener('install', e => {
+                e.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(['./', 'index.html'])));
+            });
+            self.addEventListener('fetch', e => {
+                e.respondWith(caches.match(e.request).then(res => res || fetch(e.request)));
+            });
+        `;
+        if ('serviceWorker' in navigator) {
+            const blob = new Blob([swCode], { type: 'application/javascript' });
+            const swUrl = URL.createObjectURL(blob);
+            navigator.serviceWorker.register(swUrl).catch(err => console.log('SW failed', err));
+        }
+    </script>
+</body>
+</html>
